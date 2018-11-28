@@ -2,7 +2,6 @@ import os
 import pytest
 
 from subprocess import CalledProcessError
-from uuid import uuid4
 
 from securedrop_client.crypto import GpgHelper, CryptoError
 
@@ -10,9 +9,10 @@ with open(os.path.join(os.path.dirname(__file__), 'files', 'test-key.gpg.pub.asc
     PUB_KEY = f.read()
 
 
-def test_message_logic(safe_tmpdir, mocker):
+def test_message_logic(safe_tmpdir, config, mocker):
     """
-    Ensure that messages are handled
+    Ensure that messages are handled.
+    Using the `config` fixture to ensture the config is written to disk.
     """
     gpg = GpgHelper(str(safe_tmpdir), is_qubes=False)
 
@@ -33,9 +33,10 @@ def test_message_logic(safe_tmpdir, mocker):
         str(safe_tmpdir), expected_output_filename)
 
 
-def test_gunzip_logic(safe_tmpdir, mocker):
+def test_gunzip_logic(safe_tmpdir, config, mocker):
     """
     Ensure that gzipped documents/files are handled
+    Using the `config` fixture to ensture the config is written to disk.
     """
     gpg = GpgHelper(str(safe_tmpdir), is_qubes=False)
 
@@ -55,9 +56,10 @@ def test_gunzip_logic(safe_tmpdir, mocker):
         str(safe_tmpdir), expected_output_filename)
 
 
-def test_subprocess_raises_exception(safe_tmpdir, mocker):
+def test_subprocess_raises_exception(safe_tmpdir, config, mocker):
     """
     Ensure that failed GPG commands raise an exception.
+    Using the `config` fixture to ensture the config is written to disk.
     """
     gpg = GpgHelper(str(safe_tmpdir), is_qubes=False)
 
@@ -77,12 +79,18 @@ def test_subprocess_raises_exception(safe_tmpdir, mocker):
     assert mock_gpg.call_count == 1
 
 
-def test_import_key(safe_tmpdir, source):
+def test_import_key(safe_tmpdir, config, source):
+    '''
+    Using the `config` fixture to ensture the config is written to disk.
+    '''
     helper = GpgHelper(str(safe_tmpdir), is_qubes=False)
     helper.import_key(source['uuid'], source['public_key'])
 
 
-def test_import_key_gpg_call_fail(safe_tmpdir, mocker):
+def test_import_key_gpg_call_fail(safe_tmpdir, config, mocker):
+    '''
+    Using the `config` fixture to ensture the config is written to disk.
+    '''
     helper = GpgHelper(str(safe_tmpdir), is_qubes=False)
     err = CalledProcessError(cmd=['foo'], returncode=1)
     mock_call = mocker.patch('securedrop_client.crypto.subprocess.check_call',
@@ -95,7 +103,10 @@ def test_import_key_gpg_call_fail(safe_tmpdir, mocker):
     assert mock_call.called
 
 
-def test_import_key_multiple_fingerprints(safe_tmpdir, source, mocker):
+def test_import_key_multiple_fingerprints(safe_tmpdir, source, config, mocker):
+    '''
+    Using the `config` fixture to ensture the config is written to disk.
+    '''
     helper = GpgHelper(str(safe_tmpdir), is_qubes=False)
     mock_import = mocker.patch.object(helper, '_import', returnvalue={'a', 'b'})
 
